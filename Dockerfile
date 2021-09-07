@@ -35,3 +35,8 @@ mkdir -p /nvidia/driver && \
 --no-glvnd-glx-client \
 --kernel-name=${YOCTO_KERNEL} && \
 rm -rf /tmp/*
+
+WORKDIR /app
+COPY *.sh ./
+
+ENTRYPOINT ["/bin/bash", "/app/entry.sh"]
