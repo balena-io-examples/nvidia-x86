@@ -1,5 +1,7 @@
-ARG BASE=balenalib/intel-nuc-ubuntu:latest
-ENV RESINOS_VERSION=2.39.0%2Brev2.prod
+FROM balenalib/genericx86-64-ext:latest
+
+ARG BASE=balenalib/genericx86-64-ext:latest
+ENV RESINOS_VERSION=2.83.18%28Brev1.prod
 ENV YOCTO_VERSION=5.0.3
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 ENV NVIDIA_DRIVER_VERSION=${NVIDIA_DRIVER}.40
