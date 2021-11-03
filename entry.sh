@@ -1,6 +1,8 @@
-sudo insmod /nvidia/driver/nvidia.ko
-sudo insmod /nvidia/driver/nvidia-modeset.ko
-sudo insmod /nvidia/driver/nvidia-uvm.ko
-sudo /usr/bin/nvidia-smi
+insmod /nvidia/driver/nvidia.ko
+insmod /nvidia/driver/nvidia-modeset.ko
+insmod /nvidia/driver/nvidia-uvm.ko
+
 /usr/bin/nvidia-smi
-sudo nvidia-modprobe
+nvidia-modprobe
+
+sleep infinity
