@@ -30,9 +30,9 @@ RUN \
 RUN \
     mkdir nvidia && cd nvidia && \
     wget -nv https://us.download.nvidia.com/XFree86/Linux-x86_64/$NVIDIA_DRIVER_VERSION/$NVIDIA_DRIVER && \
-    chmod +x ./${NVIDIA_DRIVER_RUN} && \
+    chmod +x ./${NVIDIA_DRIVER} && \
     mkdir -p /nvidia/driver && \
-    ./${NVIDIA_DRIVER_RUN} \
+    ./${NVIDIA_DRIVER} \
     --kernel-source-path=/usr/src/kernel_modules_headers/ \
     --kernel-install-path=/nvidia/driver \
     --ui=none \
