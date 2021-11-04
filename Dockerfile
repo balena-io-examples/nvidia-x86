@@ -21,11 +21,12 @@ RUN apt-get update && apt-get install -y git wget unzip build-essential libelf-d
 
 # Download the header modules for our OS version
 RUN \
-    curl -L -o headers.tar.gz $(echo "https://files.balena-cloud.com/images/$BALENA_MACHINE_NAME/$VERSION/kernel_modules_headers.tar.gz" | sed -e 's/+/%2B/') && \
-    tar -xf headers.tar.gz && \
+    mkdir sources && \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION/+/%2B}/kernel_source.tar.gz" \
+        | tar xz --strip-components=2 -C /usr/src/sources/ && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so.1 && \
     mkdir -p /lib/modules/${YOCTO_KERNEL} && \
-    cp -r kernel_modules_headers /lib/modules/${YOCTO_KERNEL}/build && \
-    make -C /lib/modules/*/build olddefconfig && make -C /lib/modules/*/build modules_prepare
+    make -C /usr/src/sources/build modules_prepare -j"$(nproc)"
 
 # Download and compile NVIDIA driver
 RUN \
@@ -34,7 +35,7 @@ RUN \
     chmod +x ./${NVIDIA_DRIVER} && \
     mkdir -p /nvidia/driver && \
     ./${NVIDIA_DRIVER} \
-    --kernel-source-path=/usr/src/kernel_modules_headers/ \
+    --kernel-source-path=/usr/src/sources/build/ \
     --kernel-install-path=/nvidia/driver \
     --ui=none \
     --no-drm \
