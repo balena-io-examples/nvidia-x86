@@ -17,7 +17,7 @@ ENV NVIDIA_DRIVER_VERSION 470.82.00
 ENV NVIDIA_DRIVER NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run
 
 # Install some prereqs
-RUN apt-get update && apt-get install -y git wget unzip build-essential
+RUN apt-get update && apt-get install -y git wget unzip build-essential libelf-dev bc libssl-dev bison flex
 
 # Download the header modules for our OS version
 RUN \
