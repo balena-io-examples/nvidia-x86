@@ -24,7 +24,8 @@ RUN \
     curl -L -o headers.tar.gz $(echo "https://files.balena-cloud.com/images/$BALENA_MACHINE_NAME/$VERSION/kernel_modules_headers.tar.gz" | sed -e 's/+/%2B/') && \
     tar -xf headers.tar.gz && \
     mkdir -p /lib/modules/${YOCTO_KERNEL} && \
-    cp -r kernel_modules_headers /lib/modules/${YOCTO_KERNEL}/build
+    cp -r kernel_modules_headers /lib/modules/${YOCTO_KERNEL}/build && \
+    make -C /lib/modules/*/build olddefconfig && make -C /lib/modules/*/build modules_prepare
 
 # Download and compile NVIDIA driver
 RUN \
