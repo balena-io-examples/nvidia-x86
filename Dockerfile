@@ -1,4 +1,4 @@
-FROM balenalib/genericx86-64-ext
+FROM balenalib/genericx86-64-ext:bullseye-run-20211030
 
 WORKDIR /usr/src
 
@@ -14,44 +14,60 @@ ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
 ENV NVIDIA_DRIVER_VERSION=470.82.00
-ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run
+ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
-RUN apt-get update && apt-get install -y git wget unzip build-essential libelf-dev bc libssl-dev bison flex
+RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex
+
+WORKDIR /usr/src/kernel_source
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the header modules for our OS version
 RUN \
-    mkdir sources && \
     curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
-        | tar xz --strip-components=2 -C /usr/src/sources/ && \
-    ln -sf /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so.1 && \
-    mkdir -p /lib/modules/${YOCTO_KERNEL} && \
-    make -C /usr/src/sources/build modules_prepare -j"$(nproc)"
+        | tar xz --strip-components=2 && \
+    make -C build modules_prepare -j"$(nproc)"
+
+# required if using --no-install-libglvnd from nvidia-installer
+# RUN install_packages libglvnd-dev
+
+WORKDIR /usr/src/nvidia
 
 # Download and compile NVIDIA driver
 RUN \
-    mkdir nvidia && cd nvidia && \
-    wget -nv https://us.download.nvidia.com/XFree86/Linux-x86_64/$NVIDIA_DRIVER_VERSION/$NVIDIA_DRIVER && \
-    chmod +x ./${NVIDIA_DRIVER} && \
-    mkdir -p /nvidia/driver && \
-    ./${NVIDIA_DRIVER} \
-    --kernel-source-path=/usr/src/sources/build/ \
-    --kernel-install-path=/nvidia/driver \
+    curl -fsSL -O https://us.download.nvidia.com/XFree86/Linux-x86_64/$NVIDIA_DRIVER_VERSION/$NVIDIA_DRIVER.run && \
+    chmod +x ./${NVIDIA_DRIVER}.run && \
+    # ./${NVIDIA_DRIVER}.run --advanced-options && \
+    ./${NVIDIA_DRIVER}.run --extract-only && \
+    ./${NVIDIA_DRIVER}/nvidia-installer \
     --ui=none \
+    --no-questions \
     --no-drm \
     --no-x-check \
+    --no-systemd \
+    --no-kernel-module \
+    --no-distro-scripts \
     --install-compat32-libs \
     --no-nouveau-check \
     --no-rpms \
     --no-backup \
+    --no-abi-note \
     --no-check-for-alternate-installs \
     --no-libglx-indirect \
-    --no-install-libglvnd \
+    --install-libglvnd \
     --x-prefix=/tmp/null \
     --x-module-path=/tmp/null \
     --x-library-path=/tmp/null \
     --x-sysconfig-path=/tmp/null \
-    --kernel-name=${YOCTO_KERNEL}
+    --kernel-name=${YOCTO_KERNEL} \
+    --skip-depmod \
+    --expert && \
+    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
+
+WORKDIR /nvidia/driver
+
+RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
     
 WORKDIR /usr/src/app
 COPY *.sh ./
