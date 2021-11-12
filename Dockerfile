@@ -17,7 +17,7 @@ ENV NVIDIA_DRIVER_VERSION=470.82.00
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
-RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex
+RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex software-properties-common
 
 WORKDIR /usr/src/kernel_source
 
