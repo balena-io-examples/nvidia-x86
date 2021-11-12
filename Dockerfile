@@ -23,7 +23,7 @@ WORKDIR /usr/src/kernel_source
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Download the header modules for our OS version
+# Download the kernel source for our OS version
 RUN \
     curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
         | tar xz --strip-components=2 && \
