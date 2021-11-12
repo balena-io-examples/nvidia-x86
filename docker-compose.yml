@@ -4,3 +4,5 @@ services:
   nvidia:
     build: .
     privileged: true
+    labels:
+      io.resin.features.kernel-modules: '1'
