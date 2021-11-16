@@ -23,13 +23,14 @@ WORKDIR /usr/src/kernel_source
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Download the kernel source for our OS version
+# Download the kernel source then prepare kernel source to build a module.
 RUN \
     curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 
 # required if using --no-install-libglvnd from nvidia-installer
+# correction: should probably install this if using --install-libglvnd flag below
 # RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
