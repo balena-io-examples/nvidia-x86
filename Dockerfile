@@ -41,6 +41,9 @@ RUN \
     chmod +x ./${NVIDIA_DRIVER}.run && \
     # ./${NVIDIA_DRIVER}.run --advanced-options && \
     ./${NVIDIA_DRIVER}.run --extract-only && \
+    # Install userspace portion, needed if container will also have CUDA etc...
+    # Not needed if just building kernel module. 
+    # Do include in application container.
     ./${NVIDIA_DRIVER}/nvidia-installer \
     --ui=none \
     --no-questions \
