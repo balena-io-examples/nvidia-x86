@@ -12,7 +12,7 @@ ENV BALENA_MACHINE_NAME="genericx86-64-ext"
 ENV YOCTO_VERSION=5.10.43
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
-# Set variables to download proper NVIDIA driver (was 470.82.00)
+# Set variables to download proper NVIDIA driver
 ENV NVIDIA_DRIVER_VERSION=470.86
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
@@ -25,13 +25,13 @@ WORKDIR /usr/src/kernel_source
 # Normally, pipelines only return a failure if the last command errors. 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Download the header modules for our OS version
+# Download the kernel source then prepare kernel source to build a module.
 RUN \
     curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 
-# required if using install-libglvnd from nvidia-installer
+# required if using install-libglvnd from nvidia-installer below
 RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
@@ -40,8 +40,10 @@ WORKDIR /usr/src/nvidia
 RUN \
     curl -fsSL -O https://us.download.nvidia.com/XFree86/Linux-x86_64/$NVIDIA_DRIVER_VERSION/$NVIDIA_DRIVER.run && \
     chmod +x ./${NVIDIA_DRIVER}.run && \
-    # ./${NVIDIA_DRIVER}.run --advanced-options && \
     ./${NVIDIA_DRIVER}.run --extract-only && \
+    # Install userspace portion, needed if container will also have CUDA etc...
+    # Not needed if just building kernel module. 
+    # Do include in any application container.
     ./${NVIDIA_DRIVER}/nvidia-installer \
     --ui=none \
     --no-questions \
@@ -69,9 +71,7 @@ RUN \
 
 WORKDIR /nvidia/driver
 
-
 RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
-
 
 WORKDIR /usr/src/app
 COPY *.sh ./
