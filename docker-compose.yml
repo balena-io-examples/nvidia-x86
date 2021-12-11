@@ -1,8 +1,21 @@
 version: '2'
 
 services:
-  nvidia:
-    build: .
+  gpu:
+    build: ./gpu
     privileged: true
-    labels:
-      io.resin.features.kernel-modules: '1'
+  cuda:
+    build: ./cuda
+    privileged: true
+    depends_on: 
+     - gpu 
+  app:
+    build: ./app
+    privileged: true
+    depends_on: 
+      - gpu 
+  nv-pytorch:
+    build: ./nvidia-base-image
+    privileged: true
+    depends_on: 
+      - gpu 
