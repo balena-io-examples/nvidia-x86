@@ -5,7 +5,7 @@ Note that although these examples should work as-is, the resulting images are qu
 
 | Service | Image Size | Description |
 | ------------ | ----------- | ----------- |
-| gpu | 2.28 GB | main exmaple - downloads, builds and installs gpu kernel modules |
+| gpu | 2.28 GB | main example - downloads, builds and installs gpu kernel modules |
 | cuda | 8.60 GB | example container with CUDA toolkit installed |
 | app | 7.26 GB | example of app container installing PyTorch |
 | nv-pytorch | 14.96 GB | example of using an Nvidia base image for PyTorch |
