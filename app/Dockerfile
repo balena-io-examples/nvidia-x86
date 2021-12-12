@@ -14,7 +14,7 @@ RUN \
     apt install -y nvidia-driver-470
 
 
-# Install PyTorch and run sample to confirm CUDA GPU
+# Install PyTorch
 RUN \
     apt update && \
     apt install -y python3-pip && \
