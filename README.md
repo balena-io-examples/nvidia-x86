@@ -100,7 +100,7 @@ This is one example of separating the GPU kernel module loading from an applicat
  
  ### app container
  The app container is another example of how you can separate the GPU access setup from an application that requires GPU access. In this case, we use the Ubuntu distribution's drivers instead of the Nvidia drivers. However, the version must still match the one used in the gpu container. You can see a list of the available driver versions [here](https://launchpad.net/~graphics-drivers/+archive/ubuntu/ppa). The "app" we install is PyTorch and then a Python example is run to confirm CUDA gpu access. If the container is running properly, you should see the following output, customized for your GPU model:
- ```
+```
  app  Checking for CUDA device(s) for PyTorch...
  app  ------------------------------------------
  app  Torch CUDA available: True
@@ -110,3 +110,14 @@ This is one example of separating the GPU kernel module loading from an applicat
  app  Torch CUDA device name: Quadro P400
 ```
 
+### nv-pytorch
+This is an example of using a pre-built container from the [Nvidia NGC Catalog](https://catalog.ngc.nvidia.com/). In this case we use their PyTorch container as a base image, install the Nvidia drivers on top of that (using the same version as in the gpu container which is required to be running alongside this) and then run a simple Python script that confirms CUDA GPU access. Note that we are not installing/running the Container Toolkit! If this container is running properly, you should see the following output customized for your GPU model:
+```
+ app  Checking for CUDA device(s) for PyTorch...
+ app  ------------------------------------------
+ app  Torch CUDA available: True
+ app  Torch CUDA current device: 0
+ app  Torch CUDA device info: <torch.cuda.device object at 0x7f7c749ed610>
+ app  Torch CUDA device count: 1
+ app  Torch CUDA device name: Quadro P400
+```
