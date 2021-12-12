@@ -48,6 +48,7 @@ If this container is set up and running properly, you should see the output belo
 The CUDA container example demonstrates how to install and use the CUDA toolkit (for CUDA development, etc...) in a separate container from the gpu container. The gpu container must be running first for this container to work properly. You'll need to supply a few variables for the Dockerfile, and they must match the values used in the accomanying gpu container as described above. 
 - `YOCTO_VERSION` is the version of Yocto Linux used to build your version of balenaOS. You can find it by logging into your host OS and typing: `uname -r`
 - `NVIDIA_DRIVER_VERSION` is the version of the Nvidia driver you want to download and build using the list found [here]( https://www.nvidia.com/en-us/drivers/unix/) Usually, you can use the "Latest Production Branch Version". Be sure to use the eaxct same driver version as in the gpu container.
+- 
 This is one example of separating the GPU kernel module loading from an application container. Note that all containers needing GPU access must load Nvidia drivers that exactly match the version used in the gpu container. In this case, the same driver from the same Nvidia source as the gpu container is used. (In the app container example below, the distribution's Nvidia drivers are used instead.) If this container is running properly, you should see the following output in the logs:
 ```
  cuda  /usr/local/cuda-11.5/samples/1_Utilities/deviceQuery/deviceQuery Starting...
