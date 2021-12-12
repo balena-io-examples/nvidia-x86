@@ -4,7 +4,8 @@ WORKDIR /usr/src
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Install Nvidia driver. Must match version in gpu container exactly
+# Install Nvidia driver. Must match version in gpu container exactly.
+# See https://launchpad.net/~graphics-drivers/+archive/ubuntu/ppa for version list.
 RUN \
     apt-get update && \
     apt install -y software-properties-common && \
