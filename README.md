@@ -1,5 +1,5 @@
 # nvidia-x86 on balena
-Example of using an Nvidia GPU in an x86 device on the balena platform. See the accompanying blog post (coming soon) for more details!
+Example of using an Nvidia GPU in an x86 device on the balena platform. See the accompanying [blog post](https://www.balena.io/blog/how-to-use-nvidia-gpu-on-x86-device-balenaOS/) for more details!
 
 Note that although these examples should work as-is, the resulting images are quite large and should be optimized for your particular use case. One possibility is to utilize [multistage builds](https://www.balena.io/docs/learn/deploy/build-optimization/#multi-stage-builds) to reduce the size of your containers. Below is a summary of the containers in this project, with all of the details following in the next section.
 
