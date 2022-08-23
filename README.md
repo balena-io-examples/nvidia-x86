@@ -14,6 +14,8 @@ Note that although these examples should work as-is, the resulting images are qu
 ### gpu container
 This is the main container in this example and the only one you need to obtain GPU access from within your container or for any other containers in the application. It downloads the kernel source files for our exact OS version and uses them, along with the driver file downloaded from Nvidia to build the required Nvidia kernel modules. Finally, the `entry.sh` file unloads the current Nouveau driver if it's running and loads the Nvidia modules.
 
+In some cases, the device may have trouble unloading the Noveau driver. See [this post](https://forums.balena.io/t/blacklist-drivers-in-host-os/163437/25) for an alternate script that may be helpful.
+
 This container also provides CUDA compiled application support, though not development support - see the CUDA container example for development use. You could use this image as a base image, build on top of the current example, or use alongside other containers to provide them with gpu access.
 
 Before using this example, you'll need to make sure that you've set the variables at the top of the Dockerfile:
