@@ -5,7 +5,7 @@ WORKDIR /usr/src
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set some variables to download the proper header modules
-ENV VERSION="2.83.18%2Brev1.dev"
+ENV VERSION="2.107.8%2Brev1"
 ENV BALENA_MACHINE_NAME="genericx86-64-ext"
 
 # Set variables for the Yocto version of the OS
