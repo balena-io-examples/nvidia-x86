@@ -27,8 +27,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
-        | tar xz --strip-components=2 && \
+    [ "${VERSION%%.*}" -gt "2" ] && FILE_NAME="kernel_modules_headers.tar.gz" || FILE_NAME="kernel_source.tar.gz" && \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/${FILE_NAME}" \
+    | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 
 # required if using install-libglvnd from nvidia-installer below
