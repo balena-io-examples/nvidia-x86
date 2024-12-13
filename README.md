@@ -1,6 +1,8 @@
 # nvidia-x86 on balena
 Example of using an Nvidia GPU in an x86 device on the balena platform. See the accompanying [blog post](https://www.balena.io/blog/how-to-use-nvidia-gpu-on-x86-device-balenaOS/) for more details!
 
+<img src="video_balena_x86.jpg">
+
 Note that although these examples should work as-is, the resulting images are quite large and should be optimized for your particular use case. One possibility is to utilize [multistage builds](https://www.balena.io/docs/learn/deploy/build-optimization/#multi-stage-builds) to reduce the size of your containers. Below is a summary of the containers in this project, with all of the details following in the next section.
 
 | Service | Image Size | Description |
@@ -14,6 +16,8 @@ Note that although these examples should work as-is, the resulting images are qu
 ### gpu container
 This is the main container in this example and the only one you need to obtain GPU access from within your container or for any other containers in the application. It downloads the kernel source files for our exact OS version and uses them, along with the driver file downloaded from Nvidia to build the required Nvidia kernel modules. Finally, the `entry.sh` file unloads the current Nouveau driver if it's running and loads the Nvidia modules.
 
+In some cases, the device may have trouble unloading the Noveau driver. See [this post](https://forums.balena.io/t/blacklist-drivers-in-host-os/163437/25) for an alternate script that may be helpful.
+
 This container also provides CUDA compiled application support, though not development support - see the CUDA container example for development use. You could use this image as a base image, build on top of the current example, or use alongside other containers to provide them with gpu access.
 
 Before using this example, you'll need to make sure that you've set the variables at the top of the Dockerfile:
@@ -21,6 +25,8 @@ Before using this example, you'll need to make sure that you've set the variable
 - `BALENA_MACHINE_NAME` is the device type of your balenaOS from [this list](https://www.balena.io/docs/reference/hardware/devices/)
 - `YOCTO_VERSION` is the version of Yocto Linux used to build your version of balenaOS. You can find it by logging into your host OS and typing: `uname -r`
 - `NVIDIA_DRIVER_VERSION` is the version of the Nvidia driver you want to download and build using the list found [here]( https://www.nvidia.com/en-us/drivers/unix/) Usually, you can use the "Latest Production Branch Version". Be sure to use the exact same driver version in any other containers that need access to the GPU. 
+
+NOTE: If you are trying to use this example with balenaOS < 3.0 change any occurences of `kernel_modules_headers` (such as in line 30 of the gpu Dockerfile) to `kernel-source`.
 
 If this container is set up and running properly, you should see the output below (for your gpu model) in the terminal:
 ```
@@ -122,3 +128,38 @@ This is an example of using a pre-built container from the [Nvidia NGC Catalog](
  nv-pytorch  Torch CUDA device count: 1
  nv-pytorch  Torch CUDA device name: Quadro P400
 ```
+
+## Troubleshooting
+
+- If you see errors such as:
+```
+ gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia.ko: No such device
+ gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-modeset.ko: Unknown symbol in module
+ gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-uvm.ko: Unknown symbol in module
+ gpu  NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+```
+It's likely the driver version you specified is not compatible with your hardware. Make sure the `NVIDIA_DRIVER_VERSION` you specify from the "Linux x86_64/AMD64/EM64T" section of the list on [this page](https://www.nvidia.com/en-us/drivers/unix/) shows your NVIDIA GPU under the "Supported Products" tab when clicking on the link for the driver version in the list.
+
+- If you see these errors:
+```
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia.ko: Invalid module format
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-modeset.ko: Invalid module format
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-uvm.ko: Invalid module format
+```
+It usually indicates a mismatch between the balenaOS version specified by the `VERSION` variable and the Yocto version of the OS specified by the `YOCTO_KERNEL` variable. Please re-check the variable values per the definitions in the table above.
+
+- If you see these errors:
+```
+gpu  rmmod: ERROR: Module nouveau is not currently loaded
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia.ko: File exists
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-modeset.ko: File exists
+gpu  insmod: ERROR: could not insert module /nvidia/driver/nvidia-uvm.ko: File exists
+```
+As long as the proper GPU information output (shown above in the gpu container section) is displayed, you can generally ignore these messages. It usually occurs when you have pushed a new release and the startup scripts run more than once. Rebooting should clear the error.
+
+- If you see the following error or similar during the build process:
+```
+The command '/bin/bash -o pipefail -c curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_modules_headers.tar.gz"         | tar xz --strip-components=2 &&     make -C build modules_prepare -j"$(nproc)"' returned a non-zero code: 2
+```
+
+Starting in balenaOS 3.0 the `kernel-source` kernel headers artifact was renamed to `kernel-modules-headers`. If you are trying to use this example with balenaOS < 3.0 change any occurences of `kernel_modules_headers` (such as in line 30 of the gpu Dockerfile) to `kernel-source`.
