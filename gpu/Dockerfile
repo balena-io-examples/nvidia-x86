@@ -27,7 +27,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_source.tar.gz" \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel-modules-headers.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 
