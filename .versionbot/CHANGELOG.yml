@@ -1,4 +1,35 @@
 - commits:
+    - subject: Change to kernel-modules-headers artifact
+      hash: e64d804be871afc73559d1112b19a8b3b57a415b
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris<alan@balena.io>
+        signed-off-by: Alan Boris<alan@balena.io>
+      author: Alan Boris
+    - subject: Add main image
+      hash: 8a1d338b206414b1d7b88bd7067daf4fbf35d375
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris <alan@balena.io>
+        signed-off-by: Alan Boris <alan@balena.io>
+      author: Alan Boris
+    - subject: Update README.md
+      hash: 8da73435ba21dba38322b0c02e483d0143b00498
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris <alan@balena.io>
+        signed-off-by: Alan Boris <alan@balena.io>
+      author: Alan Boris
+  version: 0.0.3
+  title: ""
+  date: 2024-12-16T04:56:20.553Z
+- commits:
     - subject: Replace balenaCI with flowzone
       hash: db07ab8b37f6920110fc23084a6d44d1950c030e
       body: ""
