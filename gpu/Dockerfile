@@ -5,15 +5,15 @@ WORKDIR /usr/src
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set some variables to download the proper header modules
-ENV VERSION="2.107.8%2Brev1"
-ENV BALENA_MACHINE_NAME="genericx86-64-ext"
+ENV VERSION="6.5.34%2Brev5"
+ENV BALENA_MACHINE_NAME="generic-amd64"
 
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=5.10.43
+ENV YOCTO_VERSION=6.6
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
-ENV NVIDIA_DRIVER_VERSION=470.86
+ENV NVIDIA_DRIVER_VERSION=570.153.02
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
@@ -27,7 +27,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel-modules-headers.tar.gz" \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_modules_headers.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 
@@ -35,6 +35,10 @@ RUN \
 RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
+
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm cuda-keyring_1.1-1_all.deb
 
 # Download and compile NVIDIA driver
 RUN \
