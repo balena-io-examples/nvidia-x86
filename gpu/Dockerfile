@@ -13,7 +13,7 @@ ENV YOCTO_VERSION=6.6
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
-ENV NVIDIA_DRIVER_VERSION=470.86
+ENV NVIDIA_DRIVER_VERSION=570.153.02
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
@@ -35,6 +35,10 @@ RUN \
 RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
+
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm cuda-keyring_1.1-1_all.deb
 
 # Download and compile NVIDIA driver
 RUN \
