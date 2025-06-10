@@ -5,7 +5,7 @@ WORKDIR /usr/src
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=5.10.43
+ENV YOCTO_VERSION=6.6
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
