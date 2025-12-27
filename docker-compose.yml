@@ -1,9 +1,25 @@
 version: '2'
 
+# The volume below is only necessary if you need to load firmware onto your GPU
+volumes:
+  firmware-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind,rshared,rw
+      device: /run/mount
+      
 services:
   gpu:
     build: ./gpu
     privileged: true
+    # The label/volume below is only necessary if you need to load firmware onto your GPU
+    labels:
+      io.balena.features.firmware: '1'
+      io.balena.features.dbus: '1'
+      io.balena.features.requires.sw.linux: '5.12.36'
+    volumes:
+      - 'firmware-volume:/data'
   cuda:
     build: ./cuda
     privileged: true

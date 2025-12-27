@@ -1,23 +1,23 @@
-FROM balenalib/genericx86-64-ext:bullseye-run-20211030
+FROM debian:13
 
 WORKDIR /usr/src
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set some variables to download the proper header modules
-ENV VERSION="2.107.8%2Brev1"
-ENV BALENA_MACHINE_NAME="genericx86-64-ext"
+ENV VERSION="6.9.2"
+ENV BALENA_MACHINE_NAME="generic-amd64"
 
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=5.10.43
+ENV YOCTO_VERSION=6.12.36
 ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
 
-# Set variables to download proper NVIDIA driver
-ENV NVIDIA_DRIVER_VERSION=470.86
+# Set variables to download proper NVIDIA driver (was 580.119.02)
+ENV NVIDIA_DRIVER_VERSION=580.95.05 
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
-RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex software-properties-common
+RUN apt -y update && apt -y install curl git wget unzip build-essential libelf-dev bc libssl-dev bison flex libglvnd-dev dbus kmod initramfs-tools
 
 WORKDIR /usr/src/kernel_source
 
@@ -27,12 +27,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel-modules-headers.tar.gz" \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_modules_headers.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
-
-# required if using install-libglvnd from nvidia-installer below
-RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
 
@@ -68,9 +65,11 @@ RUN \
     --skip-depmod \
     --expert && \
     make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
-
+    # remove the "-open" from above to use the proprietary driver
+    
 WORKDIR /nvidia/driver
 
+# remove the "-open" from below to use the proprietary driver
 RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
 
 WORKDIR /usr/src/app
