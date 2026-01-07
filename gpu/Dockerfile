@@ -65,12 +65,14 @@ RUN \
     --skip-depmod \
     --expert && \
     make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
-    # remove the "-open" from above to use the proprietary driver
+    # change the line above as follows for the open source driver:
+    # make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
     
 WORKDIR /nvidia/driver
 
-# remove the "-open" from below to use the proprietary driver
 RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
+# change the line above as follows for the open source driver:
+# RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \;
 
 WORKDIR /usr/src/app
 COPY *.sh ./

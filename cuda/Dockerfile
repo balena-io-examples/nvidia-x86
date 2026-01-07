@@ -65,12 +65,15 @@ RUN \
     --skip-depmod \
     --expert && \
     make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
-    # remove the "-open" from above to use the proprietary driver
+    # change the line above as follows for the open source driver:
+    # make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
     
 WORKDIR /nvidia/driver
 
-# remove the "-open" from below to use the proprietary driver
 RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
+# change the line above as follows for the open source driver:
+# RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \;
+
 WORKDIR /usr/src/app    
     
 # Install CUDA Toolkit for Ubuntu per https://developer.nvidia.com/cuda-downloads
@@ -80,12 +83,6 @@ RUN \
    cp /var/cuda-repo-debian12-13-0-local/cuda-*-keyring.gpg /usr/share/keyrings/ && \
    apt-get update && \
    apt-get -y install cuda-toolkit-13-0
-  
- #   wget https://developer.download.nvidia.com/compute/cuda/13.1.0/local_installers/cuda-repo-debian13-13-1-local_13.1.0-590.44.01-1_amd64.deb && \
- #   dpkg -i cuda-repo-debian13-13-1-local_13.1.0-590.44.01-1_amd64.deb && \
- #   cp /var/cuda-repo-debian13-13-1-local/cuda-*-keyring.gpg /usr/share/keyrings/ && \
- #   apt-get update && \
- #   apt-get -y install cuda-toolkit-13-1
     
 ENV PATH="/usr/local/cuda-13.0/bin:$PATH"
 ENV LD_LIBRARY_PATH="/usr/local/cuda-13.0/lib64:$LD_LIBRARY_PATH"
