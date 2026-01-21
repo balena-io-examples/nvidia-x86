@@ -5,12 +5,12 @@ WORKDIR /usr/src
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set some variables to download the proper header modules
-ENV VERSION="6.9.2"
+ENV OS_VERSION="6.9.2"
 ENV BALENA_MACHINE_NAME="generic-amd64"
 
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=6.12.36
-ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
+ENV KERNEL_VERSION=6.12.36
+ENV YOCTO_KERNEL=${KERNEL_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver (was 580.119.02)
 ENV NVIDIA_DRIVER_VERSION=580.95.05 
@@ -27,7 +27,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel_modules_headers.tar.gz" \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${OS_VERSION}/kernel_modules_headers.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
 

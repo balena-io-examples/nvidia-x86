@@ -17,7 +17,7 @@ services:
     labels:
       io.balena.features.firmware: '1'
       io.balena.features.dbus: '1'
-      io.balena.features.requires.sw.linux: '5.12.36'
+      #io.balena.features.requires.sw.linux: '5.12.36'
     volumes:
       - 'firmware-volume:/data'
   cuda:
