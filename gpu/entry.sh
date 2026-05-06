@@ -21,16 +21,12 @@ sleep 2
 rmmod nvidiafb
 sleep 2
 
-# see https://forums.balena.io/t/blacklist-drivers-in-host-os/163437/25
 
 # For loading firmware into the card
-# (-n switch below prevents a newline from being added)
-
-echo -n "/run/mount" > /sys/module/firmware_class/parameters/path
-
 # ***** Make sure to change the line below to match your driver version in the Dockerfile! *****
+# see https://blog.balena.io/giving-you-more-control-over-firmware-in-balenaos/
 
-cp /usr/src/nvidia/NVIDIA-Linux-x86_64-580.95.05/firmware/gsp_ga10x.bin /data
+cp /usr/src/nvidia/NVIDIA-Linux-x86_64-580.142/firmware/gsp_ga10x.bin /extra-firmware/gsp_ga10x.bin
 
 
 # Insert Nvidia modules

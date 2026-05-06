@@ -1,7 +1,7 @@
-FROM nvcr.io/nvidia/pytorch:25.10-py3
+FROM nvcr.io/nvidia/pytorch:25.11-py3
 
 # Starting with an Nvidia base image above, see: https://catalog.ngc.nvidia.com/
-
+ 
 ENV DEBIAN_FRONTEND noninteractive
 
 WORKDIR /usr/src

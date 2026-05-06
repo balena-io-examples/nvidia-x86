@@ -4,16 +4,19 @@ WORKDIR /usr/src
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Set the value below to 1 to use the open driver, or 0 for the proprietary driver
+ARG OPEN_DRIVER=0
+
 # Set some variables to download the proper header modules
-ENV OS_VERSION="6.9.2"
+ENV OS_VERSION="6.12.3%2Brev2"
 ENV BALENA_MACHINE_NAME="generic-amd64"
 
 # Set variables for the Yocto version of the OS
-ENV KERNEL_VERSION=6.12.36
+ENV KERNEL_VERSION=6.12.47
 ENV YOCTO_KERNEL=${KERNEL_VERSION}-yocto-standard
 
-# Set variables to download proper NVIDIA driver (was 580.119.02)
-ENV NVIDIA_DRIVER_VERSION=580.95.05 
+# Set variables to download proper NVIDIA driver
+ENV NVIDIA_DRIVER_VERSION=580.142
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
@@ -63,16 +66,23 @@ RUN \
     --x-sysconfig-path=/tmp/null \
     --kernel-name=${YOCTO_KERNEL} \
     --skip-depmod \
-    --expert && \
-    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
-    # change the line above as follows for the open source driver:
-    # make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
+    --expert 
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    echo "@@@@@ ~ Building the open driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+else \
+    echo "@@@@@ ~ Building the proprietary driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+fi
     
 WORKDIR /nvidia/driver
 
-RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
-# change the line above as follows for the open source driver:
-# RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \;
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \; ; \
+else \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \; ; \
+fi
+
 
 WORKDIR /usr/src/app    
     
