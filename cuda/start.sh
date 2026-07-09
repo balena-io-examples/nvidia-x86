@@ -3,6 +3,8 @@
 sleep 3
 
 # Run CUDA sample
-/usr/local/cuda-11.5/samples/1_Utilities/deviceQuery/deviceQuery
+cd /usr/src/app/cuda-samples/build/Samples/1_Utilities/deviceQuery
+./deviceQuery
+
 
 sleep infinity

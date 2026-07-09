@@ -1,9 +1,12 @@
 version: '2'
-
+      
 services:
   gpu:
     build: ./gpu
     privileged: true
+    labels:
+      io.balena.features.extra-firmware: '1'
+      io.balena.features.dbus: '1'
   cuda:
     build: ./cuda
     privileged: true

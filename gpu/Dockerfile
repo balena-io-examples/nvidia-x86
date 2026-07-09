@@ -1,23 +1,26 @@
-FROM balenalib/genericx86-64-ext:bullseye-run-20211030
+FROM debian:13
 
 WORKDIR /usr/src
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Set the value below to 1 to use the open driver, or 0 for the proprietary driver
+ARG OPEN_DRIVER=0
+
 # Set some variables to download the proper header modules
-ENV VERSION="2.107.8%2Brev1"
-ENV BALENA_MACHINE_NAME="genericx86-64-ext"
+ENV OS_VERSION="6.12.3%2Brev2"
+ENV BALENA_MACHINE_NAME="generic-amd64"
 
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=5.10.43
-ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
+ENV KERNEL_VERSION=6.12.47
+ENV YOCTO_KERNEL=${KERNEL_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
-ENV NVIDIA_DRIVER_VERSION=470.86
+ENV NVIDIA_DRIVER_VERSION=580.142
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
-RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex software-properties-common
+RUN apt -y update && apt -y install curl git wget unzip build-essential libelf-dev bc libssl-dev bison flex libglvnd-dev dbus kmod initramfs-tools
 
 WORKDIR /usr/src/kernel_source
 
@@ -27,12 +30,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Download the kernel source then prepare kernel source to build a module.
 RUN \
-    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${VERSION}/kernel-modules-headers.tar.gz" \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${OS_VERSION}/kernel_modules_headers.tar.gz" \
         | tar xz --strip-components=2 && \
     make -C build modules_prepare -j"$(nproc)"
-
-# required if using install-libglvnd from nvidia-installer below
-RUN install_packages libglvnd-dev
 
 WORKDIR /usr/src/nvidia
 
@@ -66,12 +66,24 @@ RUN \
     --x-sysconfig-path=/tmp/null \
     --kernel-name=${YOCTO_KERNEL} \
     --skip-depmod \
-    --expert && \
-    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules
-
+    --expert
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    echo "@@@@@ ~ Building the open driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+else \
+    echo "@@@@@ ~ Building the proprietary driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+fi
+    
 WORKDIR /nvidia/driver
 
-RUN find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \;
+
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \; ; \
+else \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \; ; \
+fi
+
 
 WORKDIR /usr/src/app
 COPY *.sh ./

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sleep 6
+sleep 12
 
 python3 /workspace/pytorch-check.py
 

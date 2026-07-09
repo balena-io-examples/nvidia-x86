@@ -1,19 +1,38 @@
-FROM balenalib/genericx86-64-ext-ubuntu:bionic
+FROM debian:12
 
 WORKDIR /usr/src
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Set the value below to 1 to use the open driver, or 0 for the proprietary driver
+ARG OPEN_DRIVER=0
+
+# Set some variables to download the proper header modules
+ENV OS_VERSION="6.12.3%2Brev2"
+ENV BALENA_MACHINE_NAME="generic-amd64"
+
 # Set variables for the Yocto version of the OS
-ENV YOCTO_VERSION=5.10.43
-ENV YOCTO_KERNEL=${YOCTO_VERSION}-yocto-standard
+ENV KERNEL_VERSION=6.12.47
+ENV YOCTO_KERNEL=${KERNEL_VERSION}-yocto-standard
 
 # Set variables to download proper NVIDIA driver
-ENV NVIDIA_DRIVER_VERSION=470.86
+ENV NVIDIA_DRIVER_VERSION=580.142
 ENV NVIDIA_DRIVER=NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}
 
 # Install some prereqs
-RUN install_packages git wget unzip build-essential libelf-dev bc libssl-dev bison flex software-properties-common libglvnd-dev
+RUN apt -y update && apt -y install curl git wget unzip build-essential libelf-dev bc libssl-dev bison flex libglvnd-dev dbus kmod initramfs-tools
+
+WORKDIR /usr/src/kernel_source
+
+# Causes a pipeline to produce a failure return code if any command errors. 
+# Normally, pipelines only return a failure if the last command errors. 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Download the kernel source then prepare kernel source to build a module.
+RUN \
+    curl -fsSL "https://files.balena-cloud.com/images/${BALENA_MACHINE_NAME}/${OS_VERSION}/kernel_modules_headers.tar.gz" \
+        | tar xz --strip-components=2 && \
+    make -C build modules_prepare -j"$(nproc)"
 
 WORKDIR /usr/src/nvidia
 
@@ -22,6 +41,9 @@ RUN \
     curl -fsSL -O https://us.download.nvidia.com/XFree86/Linux-x86_64/$NVIDIA_DRIVER_VERSION/$NVIDIA_DRIVER.run && \
     chmod +x ./${NVIDIA_DRIVER}.run && \
     ./${NVIDIA_DRIVER}.run --extract-only && \
+    # Install userspace portion, needed if container will also have CUDA etc...
+    # Not needed if just building kernel module. 
+    # Do include in any application container.
     ./${NVIDIA_DRIVER}/nvidia-installer \
     --ui=none \
     --no-questions \
@@ -42,28 +64,52 @@ RUN \
     --x-module-path=/tmp/null \
     --x-library-path=/tmp/null \
     --x-sysconfig-path=/tmp/null \
+    --kernel-name=${YOCTO_KERNEL} \
     --skip-depmod \
     --expert 
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    echo "@@@@@ ~ Building the open driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel-open KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+else \
+    echo "@@@@@ ~ Building the proprietary driver... ~"; \
+    make -C ${NVIDIA_DRIVER}/kernel KERNEL_MODLIB=/usr/src/kernel_source IGNORE_CC_MISMATCH=1 modules; \
+fi
     
+WORKDIR /nvidia/driver
+
+RUN if [ "$OPEN_DRIVER" = "1" ]; then \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel-open -name "*.ko" -exec mv {} . \; ; \
+else \
+    find /usr/src/nvidia/${NVIDIA_DRIVER}/kernel -name "*.ko" -exec mv {} . \; ; \
+fi
+
+
+WORKDIR /usr/src/app    
     
 # Install CUDA Toolkit for Ubuntu per https://developer.nvidia.com/cuda-downloads
 RUN \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-ubuntu1804.pin && \
-    mv cuda-ubuntu1804.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /" && \
-    apt-get update && \
-    apt-get -y install cuda
+   wget https://developer.download.nvidia.com/compute/cuda/13.0.2/local_installers/cuda-repo-debian12-13-0-local_13.0.2-580.95.05-1_amd64.deb && \
+   dpkg -i cuda-repo-debian12-13-0-local_13.0.2-580.95.05-1_amd64.deb && \
+   cp /var/cuda-repo-debian12-13-0-local/cuda-*-keyring.gpg /usr/share/keyrings/ && \
+   apt-get update && \
+   apt-get -y install cuda-toolkit-13-0
     
-ENV PATH="/usr/local/cuda-11.5/bin:$PATH"
-ENV LD_LIBRARY_PATH="/usr/local/cuda-11.5/lib64:$LD_LIBRARY_PATH"
+ENV PATH="/usr/local/cuda-13.0/bin:$PATH"
+ENV LD_LIBRARY_PATH="/usr/local/cuda-13.0/lib64:$LD_LIBRARY_PATH"
 
-# Compile one CUDA sample application
-RUN \
-    cd /usr/local/cuda-11.5/samples/1_Utilities/deviceQuery && \
-    make -j8
-    
 WORKDIR /usr/src/app
+
+# Compile CUDA sample applications
+
+RUN apt install -y cmake
+
+RUN git clone https://github.com/NVIDIA/cuda-samples.git && \
+    cd cuda-samples && \
+    mkdir build && cd build && \
+    cmake .. && \
+    cd /usr/src/app/cuda-samples/build/Samples/1_Utilities/deviceQuery && \
+    make
+
 
 COPY *.sh ./
 
