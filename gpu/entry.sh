@@ -10,7 +10,7 @@ DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket \
   org.freedesktop.systemd1.Manager.StopUnit \
   string:plymouth-start.service string:replace
 
-# Remove Nouveau modules
+# Remove Nouveau modules - because these open-source drivers may compete for the exact same hardware resources as the proprietary NVIDIA display driver
 sleep 6
 echo 0 > /sys/class/vtconsole/vtcon1/bind
 sleep 2
