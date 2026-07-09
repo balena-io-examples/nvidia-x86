@@ -1,4 +1,39 @@
 - commits:
+    - subject: Clarify reason for removing Nouveau modules
+      hash: 9db481dcd71319c616b4822f19406ef8144cfc30
+      body: |
+        Added explanation for removing Nouveau modules.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris <alan@balena.io>
+        signed-off-by: Alan Boris <alan@balena.io>
+      author: Alan Boris
+      nested: []
+    - subject: Add repo.yml with generic type definition
+      hash: 138af0d3e713f627bb418aee08c1348331e925f0
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris <alan@balena.io>
+        signed-off-by: Alan Boris <alan@balena.io>
+      author: Alan Boris
+      nested: []
+    - subject: Update examples and remove balenalib base images
+      hash: 37042378834c7c8bb0f18784ece0ab36123cd4fe
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alan Boris alan@balena.io
+        signed-off-by: Alan Boris alan@balena.io
+      author: Alan Boris
+      nested: []
+  version: 0.0.4
+  title: ""
+  date: 2026-07-09T21:00:56.578Z
+- commits:
     - subject: Change to kernel-modules-headers artifact
       hash: e64d804be871afc73559d1112b19a8b3b57a415b
       body: ""
